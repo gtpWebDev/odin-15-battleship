@@ -1,0 +1,48 @@
+:root {
+  --font-hierarchy: 'Kanit', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol';
+
+  --backGroundColour: #74c3d1;
+  --lightestColour: rgb(224, 204, 149);
+
+  /* Main container width max of 80% vw and fixed width, centred */
+  --minContentWidth: 1200px;
+  --bodyWidth: min(var(--minContentWidth), 90vw);
+  --bodyWidthMargin: max(calc(0.5 * (100vw - var(--minContentWidth))), 5vw);
+
+  /* Main container height of 90% vh, centred */
+  --bodyHeight: 60vh;
+  --bodyHeightMargin: calc(0.5 * (100vh - var(--bodyHeight)));
+}
+
+@font-face {
+  /* note, only the regular file is available so styling doesn't work */
+  font-family: 'Kanit';
+  src: url('./Kanit-Regular.ttf');
+  font-weight: 600;
+  font-style: normal;
+}
+
+body {
+  background-color: var(--backGroundColour);
+  font-family: var(--font-hierarchy);
+}
+
+#main-container {
+  background-color: var(--lightestColour);
+  width: var(--bodyWidth);
+  height: var(--bodyHeight);
+  margin: var(--bodyHeightMargin) var(--bodyWidthMargin);
+  display: grid;
+  align-content: start;
+  justify-items: center;
+}
+
+p,
+img {
+  line-height: var(
+    --actual-font-size
+  ); /* important to control overall height of text*/
+  margin: 0;
+  padding: 0;
+}
