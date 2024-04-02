@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Battleship project in javascript module of The Odin Project",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test": "jest",
     "watch": "jest --watch *.js",
@@ -13,12 +14,15 @@
   "author": "Glen Pearson",
   "license": "ISC",
   "dependencies": {
+    "eslint-plugin-jest": "^27.9.0",
     "webpack-cli": "^5.1.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
-    "@babel/preset-env": "^7.24.0",
+    "@babel/core": "^7.24.3",
+    "@babel/preset-env": "^7.24.3",
+    "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
+    "babel-polyfill": "^6.26.0",
     "css-loader": "^6.10.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",

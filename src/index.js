@@ -1,7 +1,11 @@
 import './styles.css';
-import DownCaret from './menu-down.svg';
 
-console.log('TEST');
+import createShip from './Ship.js';
+
+// let ship = createShip(3);
+// console.log(ship.getLength());
+
+import DownCaret from './menu-down.svg';
 
 const element = document.querySelector('#caret-container');
 
