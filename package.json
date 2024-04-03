@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Battleship project in javascript module of The Odin Project",
   "main": "src/index.js",
-  "type": "module",
   "scripts": {
     "test": "jest",
     "watch": "jest --watch *.js",

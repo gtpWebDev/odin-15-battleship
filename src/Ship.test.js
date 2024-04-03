@@ -1,18 +1,27 @@
-import { test, expect, describe, beforeAll } from '@jest/globals';
+import { test, expect, describe } from '@jest/globals';
 
 import createShip from './Ship.js';
 
 test('Created ship with length not a number throws an error', () => {
-  expect(() => createShip()).toThrow('ship length must be a number');
-  expect(() => createShip(true)).toThrow('ship length must be a number');
-  expect(() => createShip('')).toThrow('ship length must be a number');
-  expect(() => createShip(null)).toThrow('ship length must be a number');
-  expect(() => createShip(undefined)).toThrow('ship length must be a number');
+  const numErrMsg = 'ship length must be a number';
+  expect(() => createShip()).toThrow(numErrMsg);
+  expect(() => createShip(true)).toThrow(numErrMsg);
+  expect(() => createShip('')).toThrow(numErrMsg);
+  expect(() => createShip(null)).toThrow(numErrMsg);
+  expect(() => createShip(undefined)).toThrow(numErrMsg);
 });
 
 test('Created ship with length outside accepted range throws an error', () => {
-  expect(() => createShip(0)).toThrow('ship length must be min 1, max 5');
-  expect(() => createShip(6)).toThrow('ship length must be min 1, max 5');
+  const lengthErrMsg = 'ship length must be min 1, max 5';
+  expect(() => createShip(0)).toThrow(lengthErrMsg);
+  expect(() => createShip(6)).toThrow(lengthErrMsg);
+});
+
+describe('Created ship', () => {
+  const ship = createShip(3);
+  test('get length returns correct value', () => {
+    expect(ship.getLength()).toEqual(3);
+  });
 });
 
 describe('Created ship', () => {
