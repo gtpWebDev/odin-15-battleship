@@ -31,7 +31,6 @@ import createShip from './Ship.js';
 
 */
 
-// gameboard relates to player 1 - with player 1 ships, and etc. player 2.
 const createGameboard = () => {
   const boardSize = 8;
 
@@ -63,7 +62,7 @@ const createGameboard = () => {
   const getBoardSize = () => boardSize; // not essential
 
   function generateShipCoords(startX, startY, shipLength, direction) {
-    // calculate theoretical ship coordinates, ignoring board size or location of other ships
+    // calculate potential ship coordinates
 
     let coordArray = [];
     if (direction === 'horiz') {
@@ -107,6 +106,10 @@ const createGameboard = () => {
       throw new Error(dirErrorMsg);
     }
 
+    const coordErrorMsg = 'x and y coords must be on board';
+    if (startX < 0 || startX >= boardSize) throw new Error(coordErrorMsg);
+    if (startY < 0 || startY >= boardSize) throw new Error(coordErrorMsg);
+
     const shipCoords = generateShipCoords(
       startX,
       startY,
@@ -129,13 +132,22 @@ const createGameboard = () => {
     }
   };
 
-  const receiveAttack = (xCoord, yCoord) => {
-    // check if hit or not
-    // tell ship it has been hit +1
-    // record location on board as hit or miss
-    // report whether the hit ship is sunk
-    // report whether all ships are sunk
+  const receiveAttack = (x, y) => {
+    const boardPosInfo = getBoardPositionInfo(x, y);
+    const shipAtLoc = boardPosInfo.ship;
+    const shipHit = shipAtLoc ? true : false;
+    if (shipHit) shipAtLoc.hit();
+    const shipSunk = shipHit ? shipAtLoc.isSunk() : false;
+
+    addAttackedToLoc(x, y);
+
+    return {
+      hit: shipHit,
+      sunk: shipSunk,
+    };
   };
+
+  // report whether all ships are sunk
 
   return {
     getBoardSize,
@@ -143,6 +155,8 @@ const createGameboard = () => {
     positionShip,
     receiveAttack,
     getShipAtLoc,
+    addAttackedToLoc,
+    getAttackedAtLoc,
   };
 };
 

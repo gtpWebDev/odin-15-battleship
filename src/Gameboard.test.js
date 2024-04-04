@@ -3,8 +3,6 @@ import { test, expect, describe } from '@jest/globals';
 import createGameboard from './Gameboard.js';
 import createShip from './Ship.js';
 
-// test board created - when know what passing to it with regards players 1/2
-
 describe('BOARD CREATION', () => {
   let board = createGameboard();
   let boardSize = board.getBoardSize();
@@ -23,9 +21,7 @@ describe('BOARD CREATION', () => {
 describe('SHIP POSITIONING', () => {
   let board = createGameboard();
 
-  // add in tests for bad parameters for positionShip - each param type and missing params
-  // add in tests for bad parameters for positionShip - number values for coords
-  // add in tests for bad parameters for positionShip - specifics for direction 2 options
+  // chosen not to add in additional parameter tests - checking correct type
 
   test('direction argument not "horiz" or "vert" throws error', () => {
     let ship1 = createShip(4);
@@ -33,6 +29,23 @@ describe('SHIP POSITIONING', () => {
 
     expect(() => board.positionShip(ship1, 6, 1, 'nothorizorvert')).toThrow(
       dirErrorMsg
+    );
+  });
+
+  test('x and y coords off board throws error', () => {
+    let ship1 = createShip(4);
+    const coordErrorMsg = 'x and y coords must be on board';
+    expect(() => board.positionShip(ship1, -1, 1, 'horiz')).toThrow(
+      coordErrorMsg
+    );
+    expect(() => board.positionShip(ship1, 8, 1, 'horiz')).toThrow(
+      coordErrorMsg
+    );
+    expect(() => board.positionShip(ship1, 1, -1, 'horiz')).toThrow(
+      coordErrorMsg
+    );
+    expect(() => board.positionShip(ship1, 1, 8, 'horiz')).toThrow(
+      coordErrorMsg
     );
   });
 
@@ -80,13 +93,32 @@ describe('SHIP POSITIONING', () => {
   });
 });
 
-// test board info after positionShip:
+describe('RECEIVED ATTACK', () => {
+  let board = createGameboard();
 
-// - boat would cross over existing placed boats
+  // add in tests for bad parameters for receiveAttack
 
-// describe('Created board', () => {});
+  test('board position attack set to true', () => {
+    board.receiveAttack(6, 6);
+    expect(board.getAttackedAtLoc(6, 6)).toEqual(true);
+  });
 
-// test board info after receiveAttack
+  test('miss returns correct result', () => {
+    let ship = createShip(2);
+    board.positionShip(ship, 3, 3, 'horiz');
+    expect(board.receiveAttack(4, 4)).toEqual({ hit: false, sunk: false });
+  });
 
-// const ship = createShip(3);
-// board.positionShip(ship, 1, 1, 'right');
+  test('hit and not sunk returns correct result', () => {
+    let ship = createShip(2);
+    board.positionShip(ship, 1, 1, 'horiz');
+    expect(board.receiveAttack(1, 1)).toEqual({ hit: true, sunk: false });
+  });
+
+  test('hit and sunk returns correct result', () => {
+    let ship = createShip(2);
+    board.positionShip(ship, 1, 1, 'horiz');
+    board.receiveAttack(1, 1);
+    expect(board.receiveAttack(2, 1)).toEqual({ hit: true, sunk: true });
+  });
+});
