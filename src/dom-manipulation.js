@@ -257,7 +257,8 @@ const generateDraggableShip = (boardSize, svgDetails) => {
       svgDetails.length + '/' + draggableContainer.dataset.isHoriz;
     console.log('drag data', constructedDragData);
     event.dataTransfer.setData('text/plain', constructedDragData);
-    event.dataTransfer.setDragImage(draggableContainer, 30, 10);
+    // offsets need to react to page scale
+    event.dataTransfer.setDragImage(draggableContainer, 20, 20);
   });
 
   boxArea.appendChild(draggableContainer);

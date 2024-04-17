@@ -7,7 +7,8 @@
     "test": "jest",
     "watch": "jest --watch *.js",
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "subpush": "git subtree push --prefix dist origin gh-pages"
   },
   "keywords": [],
   "author": "Glen Pearson",
