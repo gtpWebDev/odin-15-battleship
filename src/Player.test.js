@@ -21,7 +21,7 @@ describe('PLAYER CREATION', () => {
 
 describe('ASSIGNING BOARD', () => {
   let player1 = createPlayer('Player 1', false);
-  let playerBoard = createGameboard();
+  let playerBoard = createGameboard(8);
   player1.assignBoard(playerBoard);
   test('board assigned correctly', () => {
     expect(player1.getBoard()).toEqual(playerBoard);
@@ -40,7 +40,7 @@ describe('ASSIGNING OPPONENT', () => {
 describe('AUTOMATIC ATTACK SELECTION', () => {
   const computer = createPlayer('Computer', true);
   const player1 = createPlayer('Player 1', false);
-  const playerBoard = createGameboard();
+  const playerBoard = createGameboard(8);
   player1.assignBoard(playerBoard);
   computer.assignOpponent(player1);
   const compOpponent = computer.getOpponent();

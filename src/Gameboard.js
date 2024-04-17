@@ -1,5 +1,3 @@
-import createShip from './Ship.js';
-
 /*
   
     Coordinates of gameboard:
@@ -21,7 +19,7 @@ import createShip from './Ship.js';
     [0, 0, 0, 0, 0, 0, 0, 0],
   ];
 
-  Access coordinate (x,y) using boardArra[x][y]
+  Access coordinate (x,y) using boardArray[x][y]
 
   each board position contains an object of form:
     {
@@ -31,8 +29,8 @@ import createShip from './Ship.js';
 
 */
 
-const createGameboard = () => {
-  const boardSize = 8;
+const createGameboard = (boardSize) => {
+  let shipCount = 0;
 
   const initialiseBoardArray = (n) => {
     let output = [];
@@ -51,6 +49,8 @@ const createGameboard = () => {
 
   let boardArray = initialiseBoardArray(boardSize);
 
+  const getBoardArray = () => boardArray;
+
   const addShipToLoc = (x, y, ship) => (boardArray[x][y].ship = ship);
   const getShipAtLoc = (x, y) => boardArray[x][y].ship;
 
@@ -61,15 +61,18 @@ const createGameboard = () => {
   const getBoardPositionInfo = (x, y) => boardArray[x][y];
   const getBoardSize = () => boardSize; // not essential
 
-  function generateShipCoords(startX, startY, shipLength, direction) {
+  const addToShipCount = () => shipCount++;
+  const getShipCount = () => shipCount;
+
+  function generateShipCoords(startX, startY, shipLength, isHoriz) {
     // calculate potential ship coordinates
 
     let coordArray = [];
-    if (direction === 'horiz') {
+    if (isHoriz) {
       for (let x = 0; x < shipLength; x++) {
         coordArray.push({ x: startX + x, y: startY });
       }
-    } else if (direction === 'vert') {
+    } else {
       for (let y = 0; y < shipLength; y++) {
         coordArray.push({ x: startX, y: startY + y });
       }
@@ -99,10 +102,29 @@ const createGameboard = () => {
     });
   }
 
-  const positionShip = (ship, startX, startY, direction) => {
+  // Allows live update of board on drag over based on location, ship length and direction
+  const shipPositionValid = (startX, startY, length, isHoriz) => {
     // error checking on input arguments
-    const dirErrorMsg = 'ship direction must be "horiz" or "vert"';
-    if (direction !== 'horiz' && direction !== 'vert') {
+    const dirErrorMsg = 'ship isHoriz must be true/false';
+    if (typeof isHoriz !== 'boolean') {
+      throw new Error(dirErrorMsg);
+    }
+
+    if (startX < 0 || startX >= boardSize || startY < 0 || startY >= boardSize)
+      return false;
+
+    const shipCoords = generateShipCoords(startX, startY, length, isHoriz);
+    // console.log(shipCoords);
+
+    const { shipValid } = checkShipCoords(shipCoords, boardSize, boardArray);
+
+    return shipValid;
+  };
+
+  const positionShip = (ship, startX, startY, isHoriz) => {
+    // error checking on input arguments
+    const dirErrorMsg = 'ship isHoriz must be true/false';
+    if (typeof isHoriz !== 'boolean') {
       throw new Error(dirErrorMsg);
     }
 
@@ -114,7 +136,7 @@ const createGameboard = () => {
       startX,
       startY,
       ship.getLength(),
-      direction
+      isHoriz
     );
     // console.log(shipCoords);
 
@@ -126,6 +148,7 @@ const createGameboard = () => {
 
     if (shipValid) {
       addShipToBoard(ship, shipCoords);
+      addToShipCount();
       return { shipPlaced: true, reason: reason };
     } else {
       return { shipPlaced: false, reason: reason };
@@ -147,16 +170,54 @@ const createGameboard = () => {
     };
   };
 
-  // report whether all ships are sunk
+  const allSunk = () => {
+    const flatArray = boardArray.flat();
+    const shipsFloating = flatArray.some(
+      (element) => element.ship !== null && element.attacked === false
+    );
+    return !shipsFloating;
+  };
+
+  // print to console functions for dev only
+  const printAttacks = () => {
+    console.log('________________________');
+    for (let y = boardSize - 1; y >= 0; y--) {
+      let horizLineString = `row ${y}: `;
+      for (let x = 0; x < boardSize; x++) {
+        const attacked = boardArray[x][y].attacked ? 'Y' : 'N';
+        horizLineString += `${attacked} | `;
+      }
+      console.log(horizLineString);
+    }
+    console.log('________________________');
+  };
+  const printShips = () => {
+    console.log('________________________');
+    for (let y = boardSize - 1; y >= 0; y--) {
+      let horizLineString = `row ${y}: `;
+      for (let x = 0; x < boardSize; x++) {
+        const ship = boardArray[x][y].ship ? 'S' : '_';
+        horizLineString += `${ship} | `;
+      }
+      console.log(horizLineString);
+    }
+    console.log('________________________');
+  };
 
   return {
+    getBoardArray,
     getBoardSize,
     getBoardPositionInfo,
+    shipPositionValid,
     positionShip,
     receiveAttack,
     getShipAtLoc,
+    getShipCount,
     addAttackedToLoc,
     getAttackedAtLoc,
+    printAttacks,
+    printShips,
+    allSunk,
   };
 };
 

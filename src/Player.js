@@ -26,7 +26,6 @@ const createPlayer = (playerName, isComputer = false) => {
 
     if (opponentBoard) {
       const boardSize = opponentBoard.getBoardSize();
-
       let attackValid = false;
       do {
         x = getRandomInt(0, boardSize - 1);
@@ -36,7 +35,7 @@ const createPlayer = (playerName, isComputer = false) => {
     } else {
       throw new Error('Board not assigned to player yet');
     }
-    console.log(`comp choice: ${x}, ${y}`);
+    // console.log(`comp choice: ${x}, ${y}`);
     return { x, y };
   };
 
