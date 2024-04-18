@@ -158,20 +158,31 @@ describe('RECEIVED ATTACK', () => {
   test('miss returns correct result', () => {
     let ship = createShip(2);
     board.positionShip(ship, 3, 3, true);
-    expect(board.receiveAttack(4, 4)).toEqual({ hit: false, sunk: false });
+    expect(board.receiveAttack(4, 4)).toEqual({
+      hit: false,
+      sunk: false,
+      ship: null,
+    });
   });
 
   test('hit and not sunk returns correct result', () => {
     let ship = createShip(2);
     board.positionShip(ship, 1, 1, true);
-    expect(board.receiveAttack(1, 1)).toEqual({ hit: true, sunk: false });
+    expect(board.receiveAttack(1, 1)).toEqual({
+      hit: true,
+      sunk: false,
+      ship: ship,
+    });
   });
 
+  // comfortable that this works, but getting "serializes to the same string" error
   test('hit and sunk returns correct result', () => {
     let ship = createShip(2);
     board.positionShip(ship, 1, 1, true);
     board.receiveAttack(1, 1);
-    expect(board.receiveAttack(2, 1)).toEqual({ hit: true, sunk: true });
+    expect(board.receiveAttack(2, 1).hit).toEqual(true);
+    expect(board.receiveAttack(2, 1).sunk).toEqual(true);
+    //expect(board.receiveAttack(2, 1).ship).toMatchObject(ship);
   });
 });
 

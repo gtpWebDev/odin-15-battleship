@@ -1,5 +1,10 @@
 import './styles.css';
-import { generateBoardArea, generateShipBoard } from './dom-manipulation.js';
+import {
+  hideDomElement,
+  updateMessage,
+  generateBoardArea,
+  generateShipBoard,
+} from './dom-manipulation.js';
 // import { generateShipBoard } from './dom-ship-selector.js';
 import createGameboard from './Gameboard.js';
 import createShip from './Ship.js';
@@ -12,59 +17,163 @@ import createPlayer from './Player.js';
   - show whether ship is droppable during drag - drag dataTransfer doesn't allow for this, would need a more global variable
 */
 
-// initial onload actions - load any opening page dom
-// - probably just a start game button to add here
+const delay = (delayInms) => {
+  return new Promise((resolve) => setTimeout(resolve, delayInms));
+};
+
+const getRandomInt = (min, max) => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const getRandomBoolean = () => {
+  return Math.random() < 0.5 ? true : false;
+};
 
 // start game button
 const createGame = () => {
   const boardSize = 8;
+  const numberOfShips = 5;
+  const shipLengthArray = [5, 4, 3, 3, 2];
 
-  const player1 = createPlayer('Player', false);
+  let enableAttacks = false;
+
+  const player1 = createPlayer('player-1', false);
   const player1Board = createGameboard(boardSize);
   player1.assignBoard(player1Board);
 
-  const player2 = createPlayer('Computer', true);
+  const player2 = createPlayer('computer', true);
   const player2Board = createGameboard(boardSize);
   player2.assignBoard(player2Board);
 
-  player1.assignOpponent(player2);
-  player2.assignOpponent(player1);
-
-  generateBoardArea('player-1', player1Board);
+  // initial DOM setup with player board and ship selection
+  generateBoardArea(player1, player1Board, enableAttacks);
+  hideDomElement('#computer-gameboard');
   generateShipBoard(boardSize);
+  updateMessage('Place your ships captain!');
+
+  const newGameButton = document.querySelector('#new-game-button');
+  newGameButton.textContent = 'Reset game';
+
+  const generateCompShipPositions = () => {
+    do {
+      // randomize computer ship location and direction
+      const ship = createShip(shipLengthArray[player2Board.getShipCount()]);
+      player2Board.positionShip(
+        ship,
+        getRandomInt(0, boardSize - 1),
+        getRandomInt(0, boardSize - 1),
+        getRandomBoolean()
+      );
+    } while (player2Board.getShipCount() < numberOfShips);
+  };
+
+  const generateCompAttack = () => {
+    let validAttack = false;
+    let x;
+    let y;
+    do {
+      x = getRandomInt(0, boardSize - 1);
+      y = getRandomInt(0, boardSize - 1);
+      if (!player1Board.getAttackedAtLoc(x, y)) validAttack = true;
+    } while (!validAttack);
+    return { x, y };
+  };
 
   // on a ship being dropped successfully onto the board
-  const addShipToBoard = (startX, startY, length, isHoriz) => {
-    console.log('POSITIONING SHIP');
-    const ship = createShip(length);
-    player1Board.positionShip(ship, startX, startY, isHoriz);
-
+  const addShipToBoard = (playerBoard, startX, startY, length, isHoriz) => {
+    console.log('isHoriz', isHoriz);
+    playerBoard.positionShip(createShip(length), startX, startY, isHoriz);
     // redraw board
-    generateBoardArea('player-1', player1Board);
+    generateBoardArea(player1, playerBoard, enableAttacks);
 
-    if (player1Board.getShipCount() >= 5) {
-      // MOVE TO MAIN ATTACK STAGE
-      // - replace ship selector with computer gameboard
-      // update messaging, and ready to go
-      console.log('PHASE 1 OVER');
+    // all ships placed
+    if (playerBoard.getShipCount() >= numberOfShips) {
+      generateCompShipPositions();
+      hideDomElement('#ship-board');
+      enableAttacks = true;
+      generateBoardArea(player2, player2Board, enableAttacks);
+
+      updateMessage('Commence your attacks!');
     }
   };
 
-  // on a click on the enemy board during player's turn
-  const attackEnemy = () => {
-    // check valid attack position
-    // add attack to gameboard
-    // check result, communicate miss, hit, sink
-    // update computer board display
-    // check whether player has sunk all ships = won = end game
-    // - how to end? disable both boards, provide new game button?
-    // - form which disables everything behind and has new game button?
+  const processValidAttack = (player, playerBoard, x, y) => {
+    const isPlayer = !player.isComp();
+
+    enableAttacks = false;
+    const attackResult = playerBoard.receiveAttack(x, y);
+    console.log('attackResult', attackResult);
+
+    if (attackResult.ship) {
+      attackResult.sunk
+        ? updateMessage(
+            `${isPlayer ? 'You have' : 'The computer has'} sunk a ship!`
+          )
+        : updateMessage(`${isPlayer ? "That's a hit!" : 'The computer hit!'}`);
+    } else {
+      updateMessage(`${isPlayer ? "That's a miss!" : 'The computer missed!'}`);
+    }
+  };
+
+  // on player click on enemy board
+  const attackEnemy = async (playerBoard, x, y) => {
+    if (playerBoard.getAttackedAtLoc(x, y)) {
+      updateMessage('You already attacked that location.');
+    } else {
+      processValidAttack(player1, playerBoard, x, y);
+      generateBoardArea(player2, player2Board, enableAttacks);
+
+      // check for player win
+      if (playerBoard.allSunk()) endGame(true);
+
+      await delay(2000);
+
+      // computer turn
+      const compAttackLoc = generateCompAttack();
+      processValidAttack(
+        player2,
+        player1Board,
+        compAttackLoc.x,
+        compAttackLoc.y
+      );
+      generateBoardArea(player1, player1Board, false);
+
+      // check for computer win
+      if (player1Board.allSunk()) endGame(false);
+
+      enableAttacks = true;
+      generateBoardArea(player2, playerBoard, enableAttacks);
+    }
+  };
+
+  const endGame = (isWin) => {
+    if (isWin) {
+      updateMessage('Congratulations captain, you won!');
+    } else {
+      updateMessage('Commiserations captain, you lost!');
+    }
+    // create a form that only has the result of the game, and a new game button
   };
 
   return { addShipToBoard, attackEnemy };
 };
 
-// will be started through start game button
-const game = createGame();
+// OPTIONS PANEL - NEW GAME, RESET GAME
 
-export { game };
+let newGame;
+
+const generateStartGameButton = () => {
+  const newGameButton = document.querySelector('#new-game-button');
+  // newGameButton.textContent = 'Start new game';
+  newGameButton.addEventListener('click', () => {
+    newGame = createGame();
+  });
+};
+
+generateStartGameButton();
+
+// create game factory and start game button
+
+export { newGame };

@@ -1,4 +1,4 @@
-import { game } from './index.js';
+import { newGame } from './index.js';
 import {
   battleshipSvg,
   carrierSvg,
@@ -7,43 +7,82 @@ import {
   cruiserSvg,
 } from './svg-ships.js';
 
-import { showDomElement } from './dom-general.js';
+const showDomElement = (domElement) => {
+  document.querySelector(domElement).classList.add('display-grid');
+  document.querySelector(domElement).classList.remove('display-none');
+};
+
+const hideDomElement = (domElement) => {
+  document.querySelector(domElement).classList.add('display-none');
+  document.querySelector(domElement).classList.remove('display-grid');
+};
+
+// MESSAGES WINDOW
+const updateMessage = (text) => {
+  const messageDOM = document.querySelector('#messages');
+  messageDOM.textContent = text;
+};
 
 // PLAYER GAMEBOARD ELEMENTS
 
-const generateBoardArea = (playerX, playerBoard) => {
-  const playerGameboard = document.querySelector(`#${playerX}-gameboard`);
+const generateBoardArea = (player, playerBoard, enableAttacks) => {
+  const playerGameboard = document.querySelector(
+    `#${player.getName()}-gameboard`
+  );
+  showDomElement(`#${player.getName()}-gameboard`);
   playerGameboard.innerHTML = '';
 
   const titleArea = document.createElement('div');
-  titleArea.setAttribute('id', `${playerX}-gameboard-title`);
+  titleArea.setAttribute('id', `${player.getName()}-gameboard-title`);
   titleArea.setAttribute('class', 'player-gameboard-title');
-  titleArea.textContent = playerX;
+  titleArea.textContent = player.getName();
 
   const detailsArea = document.createElement('div');
-  detailsArea.setAttribute('id', `${playerX}-gameboard-text`);
+  detailsArea.setAttribute('id', `${player.getName()}-gameboard-text`);
   detailsArea.setAttribute('class', 'player-gameboard-text');
-  detailsArea.textContent = 'Useful text here';
+  if (player.isComp()) {
+    if (enableAttacks) {
+      detailsArea.textContent = 'Attack by clicking on the grid';
+    } else {
+      detailsArea.textContent = 'Waiting...';
+    }
+  } else {
+    detailsArea.textContent = 'Player board';
+  }
 
-  const boardArea = generateGrid(playerX, playerBoard);
+  const boardArea = generateGrid(player, playerBoard, enableAttacks);
+  if (enableAttacks) boardArea.classList.add('crosshairs');
 
   playerGameboard.appendChild(titleArea);
   playerGameboard.appendChild(detailsArea);
   playerGameboard.appendChild(boardArea);
 };
 
-const styleGridPosition = (boardGrid, x, y, playerBoard) => {
-  if (playerBoard.getShipAtLoc(x, y))
-    boardGrid.classList.add('class', 'with-ship');
+const styleGridPosition = (player, boardGrid, boardData) => {
+  const shipInLocation = boardData.ship;
+  const locationAttacked = boardData.attacked;
 
-  if (playerBoard.getAttackedAtLoc(x, y))
-    boardGrid.classList.add('class', 'attacked');
+  if (locationAttacked) {
+    if (shipInLocation) {
+      shipInLocation.isSunk()
+        ? boardGrid.classList.add('class', 'sunk')
+        : boardGrid.classList.add('class', 'hit');
+    } else {
+      boardGrid.classList.add('class', 'miss');
+    }
+  } else {
+    if (!player.isComp() && shipInLocation) {
+      boardGrid.classList.add('class', 'with-ship');
+    } else {
+      boardGrid.classList.add('class', 'no-ship');
+    }
+  }
 };
 
-const generateGrid = (playerX, playerBoard) => {
+const generateGrid = (player, playerBoard, enableAttacks) => {
   const boardSize = playerBoard.getBoardSize();
   const boardArea = document.createElement('div');
-  boardArea.setAttribute('id', `${playerX}-gameboard-board`);
+  boardArea.setAttribute('id', `${player.getName()}-gameboard-board`);
   boardArea.setAttribute('class', 'player-gameboard-board');
   boardArea.innerHTML = '';
   boardArea.setAttribute(
@@ -61,20 +100,20 @@ const generateGrid = (playerX, playerBoard) => {
         `width: calc(${1 / (boardSize + 2)}*var(--player-window-width)); 
         height: calc(${1 / (boardSize + 2)}*var(--player-window-width))`
       );
-      // boardGrid.textContent = x + '/' + y; // temporary
 
-      // add what information is to be displayed for a cell through classes
+      // add styles to display ship, miss, hit and sunk
+      styleGridPosition(
+        player,
+        boardGrid,
+        playerBoard.getBoardPositionInfo(x, y)
+      );
+      // styleGridPosition(boardGrid, x, y, playerBoard);
 
-      //ship = null or with ship
-      // attacked is true or false
-
-      styleGridPosition(boardGrid, x, y, playerBoard);
-
-      // if (playerBoard.getShipAtLoc(x, y))
-      //   boardGrid.classList.add('class', 'with-ship');
-
-      // if (playerBoard.getAttackedAtLoc(x, y))
-      //   boardGrid.classList.add('class', 'attacked');
+      if (enableAttacks) {
+        boardGrid.addEventListener('click', () => {
+          newGame.attackEnemy(playerBoard, x, y);
+        });
+      }
 
       boardGrid.addEventListener('dragover', (event) => {
         event.preventDefault();
@@ -83,13 +122,22 @@ const generateGrid = (playerX, playerBoard) => {
       boardGrid.addEventListener('drop', (event) => {
         event.preventDefault();
         const data = event.dataTransfer.getData('text/plain');
-        const length = Number(data.slice(0, data.indexOf('/')));
+        const shipName = data.slice(0, data.indexOf('-'));
+        const length = Number(
+          data.slice(data.indexOf('-') + 1, data.indexOf('/'))
+        );
         const isHoriz = data.slice(data.indexOf('/') + 1) === 'true';
-        if (playerBoard.shipPositionValid(x, y, length, isHoriz)) {
-          game.addShipToBoard(x, y, length, isHoriz);
 
-          // disable relevant ship from being selected again (remove listener?)
-          // reset viewer
+        if (playerBoard.shipPositionValid(x, y, length, isHoriz)) {
+          newGame.addShipToBoard(playerBoard, x, y, length, isHoriz);
+          // disable image of positioned ship, and empty viewer
+          const shipImg = document.querySelector(`#${shipName}-img-selector`);
+          shipImg.setAttribute('style', 'opacity:0.2; pointer-events:none');
+          const shipViewer = document.querySelector(`#ship-board-viewer-box`);
+          shipViewer.innerHTML = '';
+
+          const shipBoardText = document.querySelector(`.ship-board-text`);
+          shipBoardText.textContent = 'Select a ship, captain';
         }
       });
 
@@ -104,6 +152,7 @@ const generateGrid = (playerX, playerBoard) => {
 const generateShipBoard = (boardSize) => {
   showDomElement('#ship-board');
   const container = document.querySelector(`#ship-board`);
+  container.innerHTML = '';
 
   const shipBoardTitle = document.createElement('div');
   shipBoardTitle.setAttribute('class', 'ship-board-title');
@@ -172,9 +221,6 @@ const rotateShip = (boardSize, container, length) => {
   // use data attribute is-horiz
 
   var isHoriz = container.dataset.isHoriz === 'true';
-
-  console.log('current isHoriz', isHoriz);
-
   const newIsHoriz = !isHoriz;
 
   // define grid cols/rows
@@ -197,6 +243,7 @@ const rotateShip = (boardSize, container, length) => {
   for (let x = 0; x < length; x++) {
     const boardGrid = document.createElement('div');
     boardGrid.setAttribute('class', 'board-cell');
+    boardGrid.classList.add('with-ship');
     boardGrid.setAttribute(
       'style',
       `width: calc(${widthScalar}*${1 / (boardSize + 2)}*var(--player-window-width));
@@ -208,13 +255,15 @@ const rotateShip = (boardSize, container, length) => {
 
   // data attribute update to not isHoriz
   container.setAttribute('data-is-horiz', newIsHoriz);
-  console.log('changing isHoriz to', newIsHoriz);
 
   // narrow the box width / height to help placement
 };
 
 // generate simplified view of selected ship in viewer for rotation and dragging
 const generateDraggableShip = (boardSize, svgDetails) => {
+  const shipBoardText = document.querySelector(`.ship-board-text`);
+  shipBoardText.textContent = 'Click-rotate or drag the ship';
+
   const boxArea = document.querySelector(`#ship-board-viewer-box`);
   boxArea.innerHTML = '';
 
@@ -236,7 +285,7 @@ const generateDraggableShip = (boardSize, svgDetails) => {
   for (let x = 0; x < svgDetails.length; x++) {
     const boardGrid = document.createElement('div');
     boardGrid.classList.add('board-cell');
-
+    boardGrid.classList.add('with-ship');
     boardGrid.setAttribute(
       'style',
       `width: calc(${widthScalar}*${1 / (boardSize + 2)}*var(--player-window-width));
@@ -254,8 +303,11 @@ const generateDraggableShip = (boardSize, svgDetails) => {
   draggableContainer.addEventListener('dragstart', (event) => {
     // bit messy but adding length and isHoriz info into plain text drag data transfer
     const constructedDragData =
-      svgDetails.length + '/' + draggableContainer.dataset.isHoriz;
-    console.log('drag data', constructedDragData);
+      svgDetails.name +
+      '-' +
+      svgDetails.length +
+      '/' +
+      draggableContainer.dataset.isHoriz;
     event.dataTransfer.setData('text/plain', constructedDragData);
     // offsets need to react to page scale
     event.dataTransfer.setDragImage(draggableContainer, 20, 20);
@@ -264,4 +316,10 @@ const generateDraggableShip = (boardSize, svgDetails) => {
   boxArea.appendChild(draggableContainer);
 };
 
-export { generateBoardArea, generateShipBoard };
+export {
+  showDomElement,
+  hideDomElement,
+  updateMessage,
+  generateBoardArea,
+  generateShipBoard,
+};

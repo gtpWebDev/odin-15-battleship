@@ -167,6 +167,7 @@ const createGameboard = (boardSize) => {
     return {
       hit: shipHit,
       sunk: shipSunk,
+      ship: shipAtLoc,
     };
   };
 
@@ -181,7 +182,7 @@ const createGameboard = (boardSize) => {
   // print to console functions for dev only
   const printAttacks = () => {
     console.log('________________________');
-    for (let y = boardSize - 1; y >= 0; y--) {
+    for (let y = 0; y < boardSize; y++) {
       let horizLineString = `row ${y}: `;
       for (let x = 0; x < boardSize; x++) {
         const attacked = boardArray[x][y].attacked ? 'Y' : 'N';
@@ -193,7 +194,7 @@ const createGameboard = (boardSize) => {
   };
   const printShips = () => {
     console.log('________________________');
-    for (let y = boardSize - 1; y >= 0; y--) {
+    for (let y = 0; y < boardSize; y++) {
       let horizLineString = `row ${y}: `;
       for (let x = 0; x < boardSize; x++) {
         const ship = boardArray[x][y].ship ? 'S' : '_';

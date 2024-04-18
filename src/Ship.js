@@ -16,6 +16,8 @@ const createShip = (len) => {
   const hit = () => {
     hitsTaken++;
     hitsTaken >= length ? (sunk = true) : (sunk = false);
+    console.log('hitsTaken', hitsTaken);
+    console.log('sunk', sunk);
   };
 
   const isSunk = () => sunk;
