@@ -1,4 +1,4 @@
-// import { newGame } from './index.js';
+import shipSvg from './assets/images/ship.svg';
 
 import activeGame from './Game.js';
 
@@ -267,6 +267,7 @@ const rotateShip = (boardSize, container, length) => {
     const boardGrid = document.createElement('div');
     boardGrid.setAttribute('class', 'board-cell');
     boardGrid.classList.add('with-ship');
+    // boardGrid.setAttribute('style', `background-image: url(${shipSvg});`);
     boardGrid.setAttribute(
       'style',
       `width: calc(${widthScalar}*${1 / (boardSize + 2)}*var(--player-window-width));

@@ -55,7 +55,6 @@ body {
   background-color: rgb(189, 215, 222);
   margin: 0;
   display: grid;
-  /* justify-content: stretch; */
   place-items: center;
 }
 
@@ -75,7 +74,6 @@ body {
 }
 
 #topbar {
-  /* background-color: var(--overlayColour); */
   padding: 10px;
   grid-row: 1;
   grid-column: 1/3;
@@ -138,10 +136,7 @@ body {
 
 .player-gameboard {
   display: grid;
-  /* justify-content: stretch;
-  align-content: stretch; */
   place-items: center;
-  /* ratio gives a square board area with 10/13 of height */
   grid-template-rows: 1fr 10fr;
 }
 
@@ -150,9 +145,6 @@ body {
 }
 
 .player-gameboard-title {
-  /* font-size: calc(
-    var(--player-window-scalar) * var(--player-window-title-font-scalar)
-  ); */
   font-size: var(--window-title-font-size);
   font-weight: 800;
 }
@@ -167,27 +159,16 @@ body {
 
 .board-cell {
   border: 0.2px solid rgb(8, 77, 161);
-  /* background-color: rgb(159, 177, 200); */
   background-color: var(--lightFontColor);
-  /* width: var(--grid-dimension);
-  height: var(--grid-dimension); */
   display: grid;
   place-items: center;
 }
 
 .with-ship {
-  /* background-color: black; */
   background-image: url('./assets/images/ship.svg');
   background-size: calc(0.7 * var(--grid-dimension));
   background-repeat: no-repeat;
   background-position: center;
-}
-
-.no-ship {
-  /* background-image: url('./assets/wave.svg'); */
-  /* background-size: calc(0.7 * var(--grid-dimension)) var(--grid-dimension);
-  background-repeat: no-repeat;
-  background-position: center; */
 }
 
 .miss {
@@ -214,12 +195,7 @@ body {
 }
 
 .ship-board {
-  display: grid; /* can be overwritten with display: none */
-
-  /* justify-content: stretch; */
-  /* align-content: stretch; */
-
-  /* place-items: center; */
+  display: grid;
   /* ratio gives room for 5x5 size with 7/13 of height, REVISIT */
   grid-template-rows: 1fr 1fr 4fr 7fr;
 }
@@ -245,13 +221,9 @@ body {
   border: 2px double black;
   margin: calc(var(--player-window-width) / 48)
     calc(var(--player-window-width) / 6);
-  /* padding: 0 80px; */
   display: grid;
   row-gap: 5px;
   place-items: center;
-
-  /* justify-content: stretch;
-  align-content: stretch; */
   grid-template-rows: repeat(3, 1fr);
   grid-template-columns: repeat(7, 1fr);
 }
@@ -323,9 +295,6 @@ body {
 }
 
 #options {
-  /* background-color: var(--overlayColour);
-  border-radius: 20px; */
-  /* margin: 20px; */
   padding: 20px;
   grid-row: 4;
   grid-column: 1/3;
@@ -384,10 +353,6 @@ dialog::backdrop {
 
 /* tablet size, player windows above each other */
 @media (width > 640px) and (width <= 1024px) {
-  body {
-    /* background-color: green; */
-  }
-
   #main-container {
     grid-template-rows: repeat (4, auto);
     grid-template-columns: repeat(1, 1fr);
@@ -422,7 +387,6 @@ dialog::backdrop {
 /* mobile, columns, player windows filling full width */
 @media (width <= 640px) {
   body {
-    /* background-color: red; */
     background-image: none;
   }
 
@@ -473,14 +437,3 @@ dialog::backdrop {
 .display-none {
   display: none;
 }
-/* 
-#temp-drag-drop {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  place-items: center;
-}
-
-#drop-zone {
-  background-color: black;
-  width: 30vw;
-} */
