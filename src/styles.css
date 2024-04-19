@@ -320,10 +320,10 @@ body {
   border: 2px solid black;
   border-radius: 20px;
   display: grid;
-  row-gap: 20px;
+  row-gap: 10px;
   place-items: center;
   grid-template-rows: auto 1fr;
-  max-width: calc(0.8 * var(--base-window-width));
+  max-width: 60vw;
 }
 
 dialog::backdrop {
@@ -333,7 +333,7 @@ dialog::backdrop {
 
 #dialog-end-game-text {
   margin: 0 20px;
-  padding: 30px;
+  padding: 20px 30px;
   display: grid;
   place-items: center;
   text-align: center;
