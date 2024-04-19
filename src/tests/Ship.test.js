@@ -1,6 +1,6 @@
 import { test, expect, describe } from '@jest/globals';
 
-import createShip from './Ship.js';
+import createShip from '../Ship.js';
 
 test('Created ship with length not a number throws an error', () => {
   const numErrMsg = 'ship length must be a number';

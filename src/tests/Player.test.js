@@ -1,7 +1,7 @@
 import { test, expect, describe } from '@jest/globals';
 
-import createPlayer from './Player.js';
-import createGameboard from './Gameboard.js';
+import createPlayer from '../Player.js';
+import createGameboard from '../Gameboard.js';
 
 // test player created
 

@@ -1,8 +1,8 @@
 import { test, expect, describe } from '@jest/globals';
 
-import createGameboard from './Gameboard.js';
-import createShip from './Ship.js';
-import createPlayer from './Player.js';
+import createGameboard from '../Gameboard.js';
+import createShip from '../Ship.js';
+import createPlayer from '../Player.js';
 
 describe('BOARD CREATION', () => {
   let board = createGameboard(8);

@@ -1,4 +1,7 @@
-import { newGame } from './index.js';
+// import { newGame } from './index.js';
+
+import activeGame from './Game.js';
+
 import {
   battleshipSvg,
   carrierSvg,
@@ -17,15 +20,49 @@ const hideDomElement = (domElement) => {
   document.querySelector(domElement).classList.remove('display-grid');
 };
 
+// INITIAL DOM SETUP
+
+const initialDomSetup = () => {
+  const messagesPanel = document.querySelector('#messages');
+
+  const newGameButton = document.createElement('button');
+  newGameButton.setAttribute('id', 'new-game-button');
+  newGameButton.textContent = 'Start new game';
+  newGameButton.addEventListener('click', () => {
+    activeGame.startGame();
+    gameStartDomSetup();
+  });
+
+  messagesPanel.appendChild(newGameButton);
+};
+
+const gameStartDomSetup = () => {
+  const realPlayer = activeGame.getRealPlayer();
+  const isAttackEnabled = false;
+  refreshBoardArea(realPlayer, isAttackEnabled);
+  hideDomElement('#computer-gameboard');
+  generateShipBoard(activeGame.getBoardSize());
+  updateMessage('Place your ships captain!');
+};
+
+const setupAttackPhaseDom = () => {
+  hideDomElement('#ship-board');
+  const isAttackEnabled = true;
+  refreshBoardArea(activeGame.getComputer(), isAttackEnabled);
+  updateMessage('Commence your attacks!');
+};
+
 // MESSAGES WINDOW
 const updateMessage = (text) => {
   const messageDOM = document.querySelector('#messages');
+  messageDOM.innerHTML = '';
   messageDOM.textContent = text;
 };
 
 // PLAYER GAMEBOARD ELEMENTS
 
-const generateBoardArea = (player, playerBoard, enableAttacks) => {
+const refreshBoardArea = (player, enableAttacks) => {
+  const playerBoard = player.getBoard();
   const playerGameboard = document.querySelector(
     `#${player.getName()}-gameboard`
   );
@@ -37,24 +74,10 @@ const generateBoardArea = (player, playerBoard, enableAttacks) => {
   titleArea.setAttribute('class', 'player-gameboard-title');
   titleArea.textContent = player.getName();
 
-  const detailsArea = document.createElement('div');
-  detailsArea.setAttribute('id', `${player.getName()}-gameboard-text`);
-  detailsArea.setAttribute('class', 'player-gameboard-text');
-  if (player.isComp()) {
-    if (enableAttacks) {
-      detailsArea.textContent = 'Attack by clicking on the grid';
-    } else {
-      detailsArea.textContent = 'Waiting...';
-    }
-  } else {
-    detailsArea.textContent = 'Player board';
-  }
-
   const boardArea = generateGrid(player, playerBoard, enableAttacks);
   if (enableAttacks) boardArea.classList.add('crosshairs');
 
   playerGameboard.appendChild(titleArea);
-  playerGameboard.appendChild(detailsArea);
   playerGameboard.appendChild(boardArea);
 };
 
@@ -111,7 +134,7 @@ const generateGrid = (player, playerBoard, enableAttacks) => {
 
       if (enableAttacks) {
         boardGrid.addEventListener('click', () => {
-          newGame.attackEnemy(playerBoard, x, y);
+          activeGame.attackRound(x, y);
         });
       }
 
@@ -129,7 +152,7 @@ const generateGrid = (player, playerBoard, enableAttacks) => {
         const isHoriz = data.slice(data.indexOf('/') + 1) === 'true';
 
         if (playerBoard.shipPositionValid(x, y, length, isHoriz)) {
-          newGame.addShipToBoard(playerBoard, x, y, length, isHoriz);
+          activeGame.addShipToBoard(x, y, length, isHoriz);
           // disable image of positioned ship, and empty viewer
           const shipImg = document.querySelector(`#${shipName}-img-selector`);
           shipImg.setAttribute('style', 'opacity:0.2; pointer-events:none');
@@ -316,10 +339,41 @@ const generateDraggableShip = (boardSize, svgDetails) => {
   boxArea.appendChild(draggableContainer);
 };
 
+// END GAME DIALOG
+
+const generateEndGameDialog = (resultText) => {
+  const endGameDialog = document.querySelector('#end-game-dialog');
+  endGameDialog.setAttribute('class', 'end-game-dialog-display');
+
+  updateMessage('');
+
+  const dialogEndGameText = document.createElement('div');
+  dialogEndGameText.setAttribute('id', 'dialog-end-game-text');
+  dialogEndGameText.textContent = resultText;
+
+  const dialogNewGameButton = document.createElement('button');
+  dialogNewGameButton.setAttribute('id', 'dialog-new-game-button');
+  dialogNewGameButton.textContent = 'START NEW GAME';
+  dialogNewGameButton.addEventListener('click', () => {
+    endGameDialog.setAttribute('class', 'end-game-dialog-no-display');
+    endGameDialog.close();
+    activeGame.startGame();
+    gameStartDomSetup();
+  });
+
+  endGameDialog.appendChild(dialogEndGameText);
+  endGameDialog.appendChild(dialogNewGameButton);
+  endGameDialog.classList.remove('end-game-dialog-no-display');
+};
+
 export {
+  initialDomSetup,
+  gameStartDomSetup,
+  setupAttackPhaseDom,
   showDomElement,
   hideDomElement,
   updateMessage,
-  generateBoardArea,
+  refreshBoardArea,
   generateShipBoard,
+  generateEndGameDialog,
 };
